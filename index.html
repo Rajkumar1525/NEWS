@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>மலைக்கோட்டை முரசு — செய்தி இணையதளம்</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #c0392b;
+    --red-dark: #922b21;
+    --red-light: #f9ebea;
+    --ink: #1a1a2e;
+    --ink-mid: #3d3d56;
+    --ink-soft: #6b6b80;
+    --paper: #faf9f7;
+    --paper-warm: #f3f0eb;
+    --paper-border: #e0dbd2;
+    --white: #ffffff;
+    --success: #1e8449;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: var(--ink);
+    color: white;
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 40px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .logo {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .logo-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--red);
+    border-radius: 50%;
+    margin-bottom: 4px;
+    display: inline-block;
+  }
+
+  .header-meta {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    text-align: right;
+  }
+
+  .header-meta span { display: block; }
+
+  .header-nav {
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+  }
+
+  .nav-tab {
+    padding: 12px 18px;
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  .nav-tab:hover { color: white; }
+  .nav-tab.active { color: white; border-bottom-color: var(--red); }
+
+  .admin-btn {
+    margin-left: auto;
+    padding: 8px 18px;
+    background: var(--red);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+
+  .admin-btn:hover { background: var(--red-dark); }
+
+  /* ===== PAGES ===== */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ===== NEWS PAGE ===== */
+  .news-hero {
+    background: linear-gradient(135deg, var(--ink) 0%, #2c2c50 100%);
+    color: white;
+    padding: 48px 40px 40px;
+    text-align: center;
+  }
+
+  .news-hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 40px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+  }
+
+  .news-hero p {
+    color: rgba(255,255,255,0.6);
+    font-size: 15px;
+  }
+
+  .news-count-badge {
+    display: inline-block;
+    background: var(--red);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+
+  /* Search bar */
+  .search-bar {
+    padding: 20px 40px;
+    background: var(--white);
+    border-bottom: 1px solid var(--paper-border);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .search-input {
+    flex: 1;
+    padding: 10px 16px;
+    border: 1px solid var(--paper-border);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-input:focus { border-color: var(--red); }
+
+  /* News grid */
+  .news-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 28px;
+  }
+
+  .news-card {
+    background: var(--white);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--paper-border);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+
+  .news-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .news-card-media {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background: var(--paper-warm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    color: var(--ink-soft);
+  }
+
+  .news-card-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .news-card-body {
+    padding: 20px;
+  }
+
+  .news-tag {
+    display: inline-block;
+    background: var(--red-light);
+    color: var(--red);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .news-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.35;
+    margin-bottom: 10px;
+  }
+
+  .news-card p {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    margin-bottom: 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .news-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 14px;
+    border-top: 1px solid var(--paper-border);
+  }
+
+  .news-date {
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .share-btn {
+    padding: 6px 14px;
+    background: transparent;
+    border: 1px solid var(--paper-border);
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-mid);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+  }
+
+  .share-btn:hover {
+    background: var(--red);
+    border-color: var(--red);
+    color: white;
+  }
+
+  .pdf-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #fef9f0;
+    border: 1px solid #f0d98a;
+    color: #7d5a00;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--ink-soft);
+  }
+
+  .empty-state .icon { font-size: 56px; margin-bottom: 16px; }
+  .empty-state h3 { font-size: 20px; color: var(--ink-mid); margin-bottom: 8px; }
+
+  /* ===== MODAL (News Detail) ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: white;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 680px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .modal-header {
+    padding: 24px 28px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .modal-close {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--paper-border);
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .modal-close:hover { background: var(--paper); }
+
+  .modal-body { padding: 20px 28px 28px; }
+
+  .modal-media {
+    width: 100%;
+    max-height: 320px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+
+  .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+
+  .modal-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--paper-border);
+  }
+
+  .modal-content {
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--ink-mid);
+    white-space: pre-wrap;
+    margin-bottom: 24px;
+  }
+
+  .modal-share {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px;
+    background: var(--paper-warm);
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+
+  .share-link-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--paper-border);
+    border-radius: 6px;
+    font-size: 13px;
+    background: white;
+    color: var(--ink);
+    font-family: monospace;
+    outline: none;
+  }
+
+  .copy-link-btn {
+    padding: 8px 16px;
+    background: var(--ink);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+
+  .copy-link-btn:hover { background: var(--red); }
+
+  /* ===== ADMIN LOGIN ===== */
+  #page-login {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--paper);
+    padding: 20px;
+  }
+
+  .login-card {
+    background: white;
+    border-radius: 14px;
+    padding: 48px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--paper-border);
+  }
+
+  .login-logo {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .login-logo .logo-text { font-size: 32px; }
+
+  .login-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-mid);
+    margin-bottom: 6px;
+  }
+
+  .login-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid var(--paper-border);
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 16px;
+  }
+
+  .login-input:focus { border-color: var(--red); background: white; }
+
+  .login-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--ink);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 8px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .login-btn:hover { background: var(--red); }
+
+  .login-error {
+    background: #fdf0ef;
+    border: 1px solid #f1b0aa;
+    color: var(--red-dark);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .back-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .back-link a {
+    color: var(--red);
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* ===== ADMIN DASHBOARD ===== */
+  #page-admin {
+    min-height: 100vh;
+    background: #f5f5f7;
+  }
+
+  .admin-header {
+    background: var(--ink);
+    color: white;
+    padding: 16px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .admin-header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    font-family: 'Playfair Display', serif;
+  }
+
+  .admin-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logout-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.8);
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .logout-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+
+  .view-site-btn {
+    padding: 8px 16px;
+    background: var(--red);
+    border: none;
+    color: white;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .view-site-btn:hover { background: var(--red-dark); }
+
+  .admin-body {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+
+  .admin-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--paper-border);
+    box-shadow: var(--shadow);
+  }
+
+  .admin-card-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--paper-border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .admin-card-header h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .card-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--red-light);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .admin-card-body { padding: 24px; }
+
+  .form-group { margin-bottom: 18px; }
+
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-mid);
+    margin-bottom: 6px;
+  }
+
+  .form-input, .form-textarea, .form-select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--paper-border);
+    border-radius: 7px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-input:focus, .form-textarea:focus { border-color: var(--red); background: white; }
+
+  .form-textarea {
+    min-height: 100px;
+    resize: vertical;
+    line-height: 1.6;
+  }
+
+  .file-drop {
+    border: 2px dashed var(--paper-border);
+    border-radius: 8px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--paper);
+  }
+
+  .file-drop:hover, .file-drop.dragging {
+    border-color: var(--red);
+    background: var(--red-light);
+  }
+
+  .file-drop-icon { font-size: 28px; margin-bottom: 8px; }
+  .file-drop p { font-size: 13px; color: var(--ink-soft); }
+  .file-drop strong { color: var(--red); }
+
+  #file-input { display: none; }
+
+  .file-preview {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--success);
+    display: none;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--red);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .submit-btn:hover { background: var(--red-dark); }
+
+  .success-toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--success);
+    color: white;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Admin news list */
+  .admin-news-list { max-height: 460px; overflow-y: auto; }
+
+  .admin-news-item {
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--paper-border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .admin-news-item:last-child { border-bottom: none; }
+
+  .admin-news-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    background: var(--paper-warm);
+    object-fit: cover;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  .admin-news-thumb img {
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+    object-fit: cover;
+  }
+
+  .admin-news-info { flex: 1; min-width: 0; }
+
+  .admin-news-info h4 {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 3px;
+  }
+
+  .admin-news-info p {
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .delete-btn {
+    padding: 8px 16px;
+    border: 1.5px solid #dc2626;
+    background: #fef2f2;
+    color: #dc2626;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .delete-btn:hover { background: #dc2626; color: white; transform: scale(1.03); }
+  .delete-btn:active { transform: scale(0.97); }
+
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 0;
+  }
+
+  .stat-box {
+    background: var(--paper-warm);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-box .num {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--red);
+    display: block;
+  }
+
+  .stat-box .lbl {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  .admin-full-col { grid-column: 1 / -1; }
+
+  /* Loading overlay */
+  #loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,26,46,0.85);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .loading-spinner {
+    width: 44px; height: 44px;
+    border: 3px solid rgba(255,255,255,0.2);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { color: white; font-size: 15px; font-weight: 500; }
+
+  /* Cloud setup banner */
+  .setup-banner {
+    background: #fff8e1;
+    border-bottom: 2px solid #f9a825;
+    padding: 12px 40px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: #5d4037;
+  }
+  .setup-banner strong { color: #e65100; }
+  .setup-banner a { color: #1565c0; font-weight: 600; }
+
+  /* Share copy toast */
+  .copy-toast {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    z-index: 9999;
+    display: none;
+    animation: fadeInOut 2s ease forwards;
+  }
+
+  @keyframes fadeInOut {
+    0% { opacity: 0; }
+    15% { opacity: 1; }
+    75% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* PDF viewer */
+  .pdf-viewer-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: #7d5a00;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    margin-bottom: 16px;
+    transition: background 0.2s;
+  }
+
+  .pdf-viewer-btn:hover { background: #5a3f00; }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .header-top { padding: 12px 16px; }
+    .header-nav { padding: 0 16px; }
+    .news-hero { padding: 32px 16px 28px; }
+    .news-hero h1 { font-size: 28px; }
+    .search-bar { padding: 14px 16px; }
+    .news-grid { padding: 20px 16px; gap: 16px; grid-template-columns: 1fr; }
+    .admin-body { grid-template-columns: 1fr; padding: 20px 16px; }
+    .admin-full-col { grid-column: 1; }
+    .login-card { padding: 32px 24px; }
+    .modal { border-radius: 10px; }
+    .modal-body { padding: 16px 20px 24px; }
+    .modal-title { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== LOADING OVERLAY ===== -->
+<div id="loading-overlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loading-text">செய்திகள் ஏற்றப்படுகின்றன...</div>
+</div>
+
+<!-- ===== SETUP BANNER (shown when cloud not configured) ===== -->
+<div class="setup-banner" id="setup-banner" style="display:none;">
+  ⚠️ <strong>Firebase இன்னும் அமைக்கப்படவில்லை.</strong> செய்திகள் இந்த சாதனத்தில் மட்டுமே சேமிக்கப்படுகின்றன.
+  <a href="#" onclick="showSetupGuide()">அமைவு வழிமுறைகளுக்கு இங்கே கிளிக் செய்யுங்கள் →</a>
+</div>
+
+<!-- ===== COPY TOAST ===== -->
+<div class="copy-toast" id="copy-toast">✓ இணைப்பு நகலெடுக்கப்பட்டது!</div>
+
+<!-- ===== MAIN SITE (Header + News) ===== -->
+<div id="site-wrapper">
+  <header>
+    <div class="header-top">
+      <div class="logo">
+        <span class="logo-dot"></span>
+        <span class="logo-text">மலைக்கோட்டை  முரசு</span>
+      </div>
+      <div class="header-meta">
+        <span id="live-date"></span>
+        <span id="live-time"></span>
+      </div>
+    </div>
+    <div class="header-nav">
+      <div class="nav-tab active" onclick="filterCategory('all', this)">அனைத்து செய்திகள்</div>
+      <div class="nav-tab" onclick="filterCategory('அரசியல்', this)">அரசியல்</div>
+      <div class="nav-tab" onclick="filterCategory('தொழில்நுட்பம்', this)">தொழில்நுட்பம்</div>
+      <div class="nav-tab" onclick="filterCategory('விளையாட்டு', this)">விளையாட்டு</div>
+      <div class="nav-tab" onclick="filterCategory('வணிகம்', this)">வணிகம்</div>
+      <div class="nav-tab" onclick="filterCategory('சுகாதாரம்', this)">சுகாதாரம்</div>
+      <button class="admin-btn" onclick="showLogin()">⚙ நிர்வாகி</button>
+    </div>
+  </header>
+
+  <!-- ===== NEWS PAGE ===== -->
+  <div id="page-news" class="page active">
+    <div class="news-hero">
+      <div class="news-count-badge" id="news-count-badge">ஏற்றப்படுகிறது...</div>
+      <h1>இன்றைய செய்திகள்</h1>
+      <p>எங்கள் ஆசிரியர் குழுவால் தொகுக்கப்பட்ட மற்றும் வெளியிடப்பட்ட சமீபத்திய செய்திகளுடன் புதுப்பித்துக்கொள்ளுங்கள்.</p>
+    </div>
+
+    <div class="search-bar">
+      <input class="search-input" id="search-input" placeholder="🔍  தலைப்பு அல்லது உள்ளடக்கம் மூலம் செய்திகளை தேடுங்கள்..." oninput="renderNews()">
+    </div>
+
+    <div class="news-grid" id="news-grid">
+      <!-- News cards rendered here -->
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADMIN LOGIN PAGE ===== -->
+<div id="page-login" class="page" style="display:none;">
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="logo-dot" style="display:inline-block; margin-right:6px;"></span>
+      <span class="logo-text">Malaikottai Murasu</span>
+      <p style="font-size:14px; color:var(--ink-soft); margin-top:6px; font-family:Inter,sans-serif; font-weight:400;">நிர்வாக நுழைவாயில்</p>
+    </div>
+    <div class="login-error" id="login-error">தவறான பயனர்பெயர் அல்லது கடவுச்சொல். மீண்டும் முயற்சிக்கவும்.</div>
+    <label class="login-label">பயனர்பெயர்</label>
+    <input class="login-input" id="login-user" type="text" placeholder="நிர்வாக பயனர்பெயரை உள்ளிடுங்கள்" autocomplete="username">
+    <label class="login-label">கடவுச்சொல்</label>
+    <input class="login-input" id="login-pass" type="password" placeholder="கடவுச்சொல்லை உள்ளிடுங்கள்" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">உள்நுழைக →</button>
+    <div class="back-link"><a onclick="showNews()">← செய்திகளுக்கு திரும்பு</a></div>
+  </div>
+</div>
+
+<!-- ===== ADMIN DASHBOARD ===== -->
+<div id="page-admin" class="page" style="display:none;">
+  <div class="admin-header">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span class="logo-dot" style="display:inline-block;"></span>
+      <h1>மலைக்கோட்டை முரசு நிர்வாகி</h1>
+    </div>
+    <div class="admin-header-actions">
+      <button class="view-site-btn" onclick="showNews()">← தளத்தை பார்க்கவும்</button>
+      <button class="logout-btn" onclick="doLogout()">வெளியேறு</button>
+    </div>
+  </div>
+
+  <div class="admin-body">
+    <!-- Post News Form -->
+    <div class="admin-card admin-full-col">
+      <div class="admin-card-header">
+        <div class="card-icon">📝</div>
+        <h2>புதிய கட்டுரை வெளியிடு</h2>
+      </div>
+      <div class="admin-card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label class="form-label">கட்டுரை தலைப்பு *</label>
+            <input class="form-input" id="post-title" placeholder="தலைப்பை உள்ளிடுங்கள்...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">வகை *</label>
+            <select class="form-input form-select" id="post-category">
+              <option value="">வகையை தேர்ந்தெடுக்கவும்</option>
+              <option>அரசியல்</option>
+              <option>தொழில்நுட்பம்</option>
+              <option>விளையாட்டு</option>
+              <option>வணிகம்</option>
+              <option>சுகாதாரம்</option>
+              <option>அறிவியல்</option>
+              <option>பொழுதுபோக்கு</option>
+              <option>உலகம்</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">சுருக்கம் / உள்ளடக்கம் *</label>
+          <textarea class="form-textarea" id="post-content" placeholder="கட்டுரை உள்ளடக்கத்தை இங்கே எழுதுங்கள்..." style="min-height:130px;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">மீடியா இணைப்பு (படம் அல்லது PDF)</label>
+          <div class="file-drop" id="file-drop" onclick="document.getElementById('file-input').click()"
+               ondragover="event.preventDefault();this.classList.add('dragging')"
+               ondragleave="this.classList.remove('dragging')"
+               ondrop="handleFileDrop(event)">
+            <div class="file-drop-icon">📎</div>
+            <p><strong>பதிவேற்ற கிளிக் செய்யவும்</strong> அல்லது இங்கே இழுத்து விடவும்</p>
+            <p style="margin-top:4px;">ஆதரிக்கப்படுவன: JPG, PNG, GIF, WebP, PDF</p>
+          </div>
+          <input type="file" id="file-input" accept="image/*,.pdf" onchange="handleFileSelect(this)">
+          <div class="file-preview" id="file-preview"></div>
+        </div>
+        <button class="submit-btn" onclick="publishNews()">📢 கட்டுரையை வெளியிடு</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <div class="card-icon">📊</div>
+        <h2>புள்ளிவிவரங்கள்</h2>
+      </div>
+      <div class="admin-card-body">
+        <div class="stats-grid" id="admin-stats"></div>
+      </div>
+    </div>
+
+    <!-- Published Articles -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <div class="card-icon">📰</div>
+        <h2>வெளியிடப்பட்ட கட்டுரைகள்</h2>
+      </div>
+      <div class="admin-news-list" id="admin-news-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NEWS DETAIL MODAL ===== -->
+<div class="modal-overlay" id="news-modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="news-tag" id="modal-tag"></span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="modal-media-container"></div>
+      <h2 class="modal-title" id="modal-title"></h2>
+      <div class="modal-meta">
+        <span>📅 <span id="modal-date"></span></span>
+        <span>🕐 <span id="modal-time"></span></span>
+        <span>✍ நிர்வாகி</span>
+      </div>
+      <div class="modal-content" id="modal-content"></div>
+      <div class="modal-share">
+        <span style="font-size:14px;font-weight:500;color:var(--ink-mid);white-space:nowrap;">🔗 பகிர்:</span>
+        <input class="share-link-input" id="modal-share-link" readonly onclick="this.select()">
+        <button class="copy-link-btn" onclick="copyShareLink()">இணைப்பை நகலெடு</button>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button onclick="shareToWhatsApp()" style="padding:9px 16px;background:#25d366;color:white;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;">வாட்ஸ்அப்</button>
+        <button onclick="shareToTwitter()" style="padding:9px 16px;background:#1da1f2;color:white;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;">ட்விட்டர் / X</button>
+        <button onclick="shareToFacebook()" style="padding:9px 16px;background:#1877f2;color:white;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;">பேஸ்புக்</button>
+        <button onclick="useNativeShare()" style="padding:9px 16px;background:var(--ink);color:white;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;">⬆ மேலும்</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SUCCESS TOAST ===== -->
+<div class="success-toast" id="success-toast">✅ கட்டுரை வெளியிடப்பட்டது!</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ===== CONFIG =====
+const ADMIN_USER = 'malaikottaimurasu';
+const ADMIN_PASS = 'murasu123';
+let currentArticle = null;
+let currentCategory = 'all';
+let uploadedFile = null;
+let uploadedFileType = null;
+
+// ===== FIREBASE CONFIG =====
+// Paste your Firebase config values below after creating your project
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyAnKHEwQypZ8TK3ZojzggrAU4WDjgSUcAg",
+  authDomain:        "murasu-news-f0382.firebaseapp.com",
+  projectId:         "murasu-news-f0382",
+  storageBucket:     "murasu-news-f0382.firebasestorage.app",
+  messagingSenderId: "972441559695",
+  appId:             "1:972441559695:web:cf2f857a11e86c74fbc6fa"
+};
+
+// ===== FIREBASE SETUP =====
+let db = null;
+let _newsCache = null;
+const COLLECTION = 'news';
+
+function isFirebaseReady() {
+  return db !== null;
+}
+
+function isAdmin() { return sessionStorage.getItem('dp_admin') === '1'; }
+
+function setLoading(on, msg) {
+  const el = document.getElementById('loading-overlay');
+  const txt = document.getElementById('loading-text');
+  if (el) el.style.display = on ? 'flex' : 'none';
+  if (txt && msg) txt.textContent = msg;
+}
+
+// Initialize Firebase with REAL-TIME listener
+function initFirebase() {
+  try {
+    if (!firebase.apps || !firebase.apps.length) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
+    db = firebase.firestore();
+
+    // REAL-TIME LISTENER: auto-updates ALL devices instantly
+    db.collection(COLLECTION)
+      .orderBy('timestamp', 'desc')
+      .onSnapshot(function(snapshot) {
+        const articles = [];
+        snapshot.forEach(function(doc) {
+          const data = doc.data();
+          articles.push(Object.assign({}, data, { firestoreId: doc.id }));
+        });
+        _newsCache = articles;
+        localStorage.setItem('dp_news', JSON.stringify(articles));
+        // Auto refresh news page on ALL devices
+        renderNews();
+        // Refresh admin panel if open
+        const adminList = document.getElementById('admin-news-list');
+        if (adminList && adminList.children.length > 0) {
+          renderAdminList();
+          renderAdminStats();
+        }
+        setLoading(false);
+      }, function(err) {
+        console.error('Firestore error:', err);
+        setLoading(false);
+      });
+
+    console.log('Firebase connected — real-time sync active!');
+    return true;
+  } catch(e) {
+    console.error('Firebase init error:', e);
+    return false;
+  }
+}
+
+// getNewsCloud kept for compatibility but onSnapshot handles everything
+async function getNewsCloud() {
+  return _newsCache || [];
+}
+
+// Save ONE new article to Firebase
+async function saveArticleCloud(article) {
+  if (!isFirebaseReady()) {
+    // fallback: save to localStorage
+    const arr = getNews();
+    arr.unshift(article);
+    _newsCache = arr;
+    localStorage.setItem('dp_news', JSON.stringify(arr));
+    return article;
+  }
+  try {
+    const docRef = await db.collection(COLLECTION).add(article);
+    article.firestoreId = docRef.id;
+    // Refresh cache
+    if (_newsCache) _newsCache.unshift(article);
+    else _newsCache = [article];
+    localStorage.setItem('dp_news', JSON.stringify(_newsCache));
+    return article;
+  } catch(e) {
+    console.error('Firebase save error:', e);
+    alert('கட்டுரை சேமிப்பில் பிழை. Firebase அமைப்பை சரிபார்க்கவும்.');
+    return null;
+  }
+}
+
+// Delete ONE article from Firebase by Firestore document ID
+async function deleteArticleCloud(firestoreId) {
+  if (!isFirebaseReady()) {
+    console.warn('Firebase not ready');
+    return false;
+  }
+  try {
+    await db.collection(COLLECTION).doc(firestoreId).delete();
+    return true;
+  } catch(e) {
+    console.error('Firebase delete error:', e);
+    alert('கட்டுரை நீக்குவதில் பிழை. Firebase அமைப்பை சரிபார்க்கவும்.');
+    return false;
+  }
+}
+
+// Synchronous getter (uses cache)
+function getNews() {
+  if (_newsCache !== null) return _newsCache;
+  try { return JSON.parse(localStorage.getItem('dp_news') || '[]'); } catch { return []; }
+}
+function saveNews(arr) {
+  _newsCache = arr;
+  localStorage.setItem('dp_news', JSON.stringify(arr));
+}
+
+// ===== LIVE CLOCK =====
+function updateClock() {
+  const now = new Date();
+  const d = now.toLocaleDateString('ta-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  const t = now.toLocaleTimeString('ta-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  const de = document.getElementById('live-date');
+  const te = document.getElementById('live-time');
+  if (de) de.textContent = d;
+  if (te) te.textContent = t;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ===== NAVIGATION =====
+function showPage(id) {
+  document.getElementById('site-wrapper').style.display = id === 'news' ? 'block' : 'none';
+  document.getElementById('page-login').style.display = id === 'login' ? 'flex' : 'none';
+  document.getElementById('page-admin').style.display = id === 'admin' ? 'block' : 'none';
+}
+
+function showNews() { showPage('news'); renderNews(); }
+function showLogin() { showPage('login'); }
+
+function showAdmin() {
+  showPage('admin');
+  renderAdminList();
+  renderAdminStats();
+  // Show setup banner if cloud not configured
+  const banner = document.getElementById('setup-banner');
+  if (banner) banner.style.display = !isFirebaseReady() ? 'flex' : 'none';
+}
+
+function showSetupGuide() {
+  alert(
+    'HOW TO SET UP FIREBASE (FREE FOREVER)\n\n' +
+    'Step 1: Go to https://console.firebase.google.com\n' +
+    'Step 2: Click "Add project" → name it "murasu-news" → Continue\n' +
+    'Step 3: Disable Google Analytics → Create project\n' +
+    'Step 4: Click the </> Web icon → Register app → name it "murasu"\n' +
+    'Step 5: Copy the firebaseConfig object shown\n\n' +
+    'Step 6: Open this HTML file in Notepad\n' +
+    'Find FIREBASE_CONFIG near the top and paste your values\n\n' +
+    'Step 7: In Firebase Console → Build → Firestore Database\n' +
+    '→ Create database → Start in TEST MODE → Enable\n\n' +
+    'Step 8: Save the HTML file → upload to GitHub\n' +
+    'Now ALL devices share the same news in real time!'
+  );
+}
+
+function doLogout() {
+  sessionStorage.removeItem('dp_admin');
+  showNews();
+}
+
+// ===== URL HASH ROUTING =====
+function getArticleSlug(article) {
+  return 'article-' + article.id;
+}
+
+function checkUrlHash() {
+  const hash = window.location.hash.replace('#','');
+  if (hash.startsWith('article-')) {
+    const id = parseInt(hash.replace('article-',''));
+    const news = getNews();
+    const article = news.find(a => a.id === id);
+    if (article) {
+      showNews();
+      openModal(article);
+    }
+  }
+}
+
+window.addEventListener('hashchange', checkUrlHash);
+
+// ===== AUTH =====
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-error');
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    sessionStorage.setItem('dp_admin','1');
+    err.style.display = 'none';
+    document.getElementById('login-user').value = '';
+    document.getElementById('login-pass').value = '';
+    showAdmin();
+  } else {
+    err.style.display = 'block';
+    document.getElementById('login-pass').value = '';
+  }
+}
+
+
+
+// ===== FILE UPLOAD =====
+function handleFileSelect(input) {
+  const file = input.files[0];
+  if (file) processFile(file);
+}
+
+function handleFileDrop(event) {
+  event.preventDefault();
+  document.getElementById('file-drop').classList.remove('dragging');
+  const file = event.dataTransfer.files[0];
+  if (file) processFile(file);
+}
+
+function processFile(file) {
+  const allowed = ['image/jpeg','image/png','image/gif','image/webp','application/pdf'];
+  if (!allowed.includes(file.type)) {
+    alert('தயவுசெய்து படம் (JPG, PNG, GIF, WebP) அல்லது PDF கோப்பை பதிவேற்றவும்.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    uploadedFile = e.target.result;
+    uploadedFileType = file.type;
+    const preview = document.getElementById('file-preview');
+    preview.style.display = 'flex';
+    const icon = file.type === 'application/pdf' ? '📄' : '🖼';
+    preview.innerHTML = `${icon} <strong>${file.name}</strong> (${(file.size/1024).toFixed(1)} KB) — Ready to publish`;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ===== PUBLISH NEWS =====
+async function publishNews() {
+  const title = document.getElementById('post-title').value.trim();
+  const content = document.getElementById('post-content').value.trim();
+  const category = document.getElementById('post-category').value;
+
+  if (!title || !content || !category) {
+    alert('தயவுசெய்து தலைப்பு, உள்ளடக்கம் மற்றும் வகையை நிரப்பவும்.');
+    return;
+  }
+
+  const now = new Date();
+  const article = {
+    id: Date.now(),
+    title,
+    content,
+    category,
+    date: now.toLocaleDateString('ta-IN', { year:'numeric', month:'long', day:'numeric' }),
+    time: now.toLocaleTimeString('ta-IN', { hour:'2-digit', minute:'2-digit' }),
+    timestamp: now.toISOString(),
+    media: uploadedFile || null,
+    mediaType: uploadedFileType || null
+  };
+
+  setLoading(true, 'கட்டுரை வெளியிடப்படுகிறது...');
+  const saved = await saveArticleCloud(article);
+  setLoading(false);
+  if (!saved) return;
+
+  // Reset form
+  document.getElementById('post-title').value = '';
+  document.getElementById('post-content').value = '';
+  document.getElementById('post-category').value = '';
+  document.getElementById('file-preview').style.display = 'none';
+  document.getElementById('file-input').value = '';
+  uploadedFile = null;
+  uploadedFileType = null;
+
+  renderAdminList();
+  renderAdminStats();
+
+  const toast = document.getElementById('success-toast');
+  toast.style.display = 'flex';
+  setTimeout(() => { toast.style.display = 'none'; }, 3500);
+}
+
+// ===== DELETE NEWS (Admin only) =====
+async function deleteNews(id) {
+  // Find the article in cache
+  var allNews = getNews();
+  var numId = Number(id);
+  var article = null;
+  for (var i = 0; i < allNews.length; i++) {
+    if (Number(allNews[i].id) === numId) { article = allNews[i]; break; }
+  }
+  if (!article) { alert('Article not found!'); return; }
+
+  // Confirm dialog
+  var confirmed = window.confirm(
+    'கட்டுரையை நீக்கவா?\n\n' +
+    'தலைப்பு: "' + article.title + '"\n' +
+    'வகை: ' + article.category + '\n\n' +
+    'Click OK to permanently delete from ALL devices.\nClick Cancel to keep it.'
+  );
+  if (!confirmed) return;
+
+  setLoading(true, 'Deleting article...');
+
+  // Delete from Firebase using the Firestore document ID
+  var deleted = false;
+  if (article.firestoreId) {
+    deleted = await deleteArticleCloud(article.firestoreId);
+  } else {
+    // Fallback: not from Firebase, just remove from cache
+    deleted = true;
+  }
+
+  if (deleted) {
+    // Remove from local cache
+    _newsCache = allNews.filter(a => Number(a.id) !== numId);
+    localStorage.setItem('dp_news', JSON.stringify(_newsCache));
+  }
+
+  setLoading(false);
+  renderAdminList();
+  renderAdminStats();
+
+  if (deleted) {
+    var toast = document.getElementById('success-toast');
+    toast.innerHTML = '🗑️ Article deleted from all devices!';
+    toast.style.background = '#c0392b';
+    toast.style.display = 'flex';
+    setTimeout(function() {
+      toast.style.display = 'none';
+      toast.style.background = '';
+      toast.innerHTML = '✅ Article published successfully!';
+    }, 3000);
+  }
+}
+
+// ===== RENDER NEWS PAGE =====
+function renderNews() {
+  const news = getNews();
+  const search = document.getElementById('search-input')?.value?.toLowerCase() || '';
+  const grid = document.getElementById('news-grid');
+  const badge = document.getElementById('news-count-badge');
+
+  let filtered = news;
+  if (currentCategory !== 'all') filtered = filtered.filter(a => a.category === currentCategory);
+  if (search) filtered = filtered.filter(a =>
+    a.title.toLowerCase().includes(search) ||
+    a.content.toLowerCase().includes(search) ||
+    a.category.toLowerCase().includes(search)
+  );
+
+  if (badge) badge.textContent = filtered.length + ' Article' + (filtered.length !== 1 ? 's' : '');
+
+  if (!grid) return;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty-state"><div class="icon">📭</div><h3>${search || currentCategory !== 'all' ? 'பொருந்தும் கட்டுரைகள் எதுவும் இல்லை' : 'இன்னும் கட்டுரைகள் வெளியிடப்படவில்லை'}</h3><p>${search || currentCategory !== 'all' ? 'வேறு தேடல் அல்லது வகையை முயற்சிக்கவும்.' : 'நிர்வாகி விரைவில் செய்திகளை வெளியிடுவார். பிறகு சரிபார்க்கவும்!'}</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(article => {
+    const mediaHtml = article.media
+      ? article.mediaType === 'application/pdf'
+        ? `<div class="news-card-media"><div style="text-align:center"><div style="font-size:48px">📄</div><div style="font-size:12px;margin-top:6px;color:var(--ink-soft)">PDF Document</div></div></div>`
+        : `<div class="news-card-media"><img src="${article.media}" alt="${article.title}" loading="lazy"></div>`
+      : `<div class="news-card-media">📰</div>`;
+
+    return `
+      <div class="news-card" onclick="openModal(${JSON.stringify(article).replace(/"/g,'&quot;')})">
+        ${mediaHtml}
+        <div class="news-card-body">
+          <span class="news-tag">${article.category}</span>
+          <h2>${article.title}</h2>
+          <p>${article.content}</p>
+          <div class="news-card-footer">
+            <span class="news-date">📅 ${article.date} · ${article.time}</span>
+<button class="share-btn" onclick="event.stopPropagation(); quickShare(${article.id})">🔗 Share</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function filterCategory(cat, el) {
+  currentCategory = cat;
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderNews();
+}
+
+// ===== MODAL =====
+function openModal(article) {
+  currentArticle = article;
+  const slug = getArticleSlug(article);
+  window.location.hash = slug;
+
+  document.getElementById('modal-tag').textContent = article.category;
+  document.getElementById('modal-title').textContent = article.title;
+  document.getElementById('modal-date').textContent = article.date;
+  document.getElementById('modal-time').textContent = article.time;
+  document.getElementById('modal-content').textContent = article.content;
+
+  const shareUrl = window.location.origin + window.location.pathname + '#' + slug;
+  document.getElementById('modal-share-link').value = shareUrl;
+
+  const mc = document.getElementById('modal-media-container');
+  if (article.media) {
+    if (article.mediaType === 'application/pdf') {
+      mc.innerHTML = `<a class="pdf-viewer-btn" href="${article.media}" target="_blank">📄 PDF ஆவணத்தை திறக்கவும்</a>`;
+    } else {
+      mc.innerHTML = `<img src="${article.media}" alt="${article.title}" class="modal-media">`;
+    }
+  } else {
+    mc.innerHTML = '';
+  }
+
+  document.getElementById('news-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('news-modal').classList.remove('open');
+  document.body.style.overflow = '';
+  currentArticle = null;
+  history.pushState('', document.title, window.location.pathname);
+}
+
+// ===== SHARE =====
+function getShareUrl() {
+  if (!currentArticle) return window.location.href;
+  return window.location.origin + window.location.pathname + '#' + getArticleSlug(currentArticle);
+}
+
+function copyShareLink() {
+  const url = getShareUrl();
+  navigator.clipboard.writeText(url).then(() => showCopyToast()).catch(() => {
+    document.getElementById('modal-share-link').select();
+    document.execCommand('copy');
+    showCopyToast();
+  });
+}
+
+function quickShare(id) {
+  const news = getNews();
+  const article = news.find(a => a.id === id);
+  if (!article) return;
+  const url = window.location.origin + window.location.pathname + '#article-' + id;
+  navigator.clipboard.writeText(url).then(() => showCopyToast()).catch(() => {
+    const tmp = document.createElement('textarea');
+    tmp.value = url;
+    document.body.appendChild(tmp);
+    tmp.select();
+    document.execCommand('copy');
+    document.body.removeChild(tmp);
+    showCopyToast();
+  });
+}
+
+function showCopyToast() {
+  const t = document.getElementById('copy-toast');
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 2200);
+}
+
+function shareToWhatsApp() {
+  const url = getShareUrl();
+  const text = currentArticle ? currentArticle.title + ' — ' + url : url;
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}
+
+function shareToTwitter() {
+  const url = getShareUrl();
+  const text = currentArticle ? currentArticle.title : 'இந்த செய்தியை பாருங்கள்';
+  window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url), '_blank');
+}
+
+function shareToFacebook() {
+  const url = getShareUrl();
+  window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url), '_blank');
+}
+
+function useNativeShare() {
+  const url = getShareUrl();
+  if (navigator.share) {
+    navigator.share({
+      title: currentArticle?.title || 'Malaikottai Murasu News',
+      text: currentArticle?.content?.substring(0, 120) + '...' || '',
+      url
+    }).catch(() => {});
+  } else {
+    copyShareLink();
+  }
+}
+
+// ===== ADMIN RENDERS =====
+function renderAdminList() {
+  const news = getNews();
+  const list = document.getElementById('admin-news-list');
+  if (!list) return;
+
+  if (news.length === 0) {
+    list.innerHTML = `<div style="padding:32px;text-align:center;color:var(--ink-soft);font-size:14px;">No articles published yet.</div>`;
+    return;
+  }
+
+  list.innerHTML = news.slice(0,20).map(a => {
+    const thumb = a.media
+      ? a.mediaType === 'application/pdf'
+        ? `<div class="admin-news-thumb">📄</div>`
+        : `<div class="admin-news-thumb"><img src="${a.media}" alt=""></div>`
+      : `<div class="admin-news-thumb">📰</div>`;
+
+    return `
+      <div class="admin-news-item" data-news-id="${a.id}">
+        ${thumb}
+        <div class="admin-news-info">
+          <h4>${a.title}</h4>
+          <p>${a.category} · ${a.date} ${a.time}</p>
+        </div>
+        <button class="delete-btn" onclick="deleteNews(${a.id})">🗑️ நீக்கு</button>
+      </div>`;
+  }).join('');
+}
+
+function renderAdminStats() {
+  const news = getNews();
+  const cats = {};
+  news.forEach(a => { cats[a.category] = (cats[a.category] || 0) + 1; });
+  const topCat = Object.entries(cats).sort((a,b) => b[1]-a[1])[0];
+
+  const today = new Date().toDateString();
+  const todayCount = news.filter(a => new Date(a.timestamp).toDateString() === today).length;
+
+  document.getElementById('admin-stats').innerHTML = `
+    <div class="stat-box"><span class="num">${news.length}</span><div class="lbl">Total Articles</div></div>
+    <div class="stat-box"><span class="num">${todayCount}</span><div class="lbl">Published Today</div></div>
+    <div class="stat-box"><span class="num">${Object.keys(cats).length}</span><div class="lbl">Categories</div></div>
+    <div class="stat-box"><span class="num" style="font-size:16px;">${topCat ? topCat[0] : '—'}</span><div class="lbl">Top Category</div></div>
+  `;
+}
+
+// ===== SEED SAMPLE DATA (first time only) =====
+function seedSampleData() {
+  if (localStorage.getItem('dp_seeded')) return;
+  const samples = [
+    {
+      id: 1700000001,
+      title: "உலக காலநிலை மாநாடு வரலாற்று சாதனை படைக்கிறது",
+      content: "World leaders gathered in Geneva have signed a landmark climate accord, committing to net-zero carbon emissions by 2045. The agreement, backed by 190 nations, includes binding targets for renewable energy adoption and financial support for developing countries transitioning away from fossil fuels.\n\nEnvironmental experts have hailed the accord as the most significant step forward since the Paris Agreement of 2015.",
+      category: "அரசியல்",
+      date: new Date(Date.now() - 86400000).toLocaleDateString('ta-IN', { year:'numeric', month:'long', day:'numeric' }),
+      time: "09:30 AM",
+      timestamp: new Date(Date.now() - 86400000).toISOString(),
+      media: null, mediaType: null
+    },
+    {
+      id: 1700000002,
+      title: "புதிய AI மாதிரி மனித அளவிலான சிந்தனையை அடைகிறது",
+      content: "Researchers have unveiled a new artificial intelligence system capable of solving complex multi-step reasoning problems with accuracy exceeding trained human professionals in several domains including mathematics, legal analysis, and scientific research.\n\nThe model, developed over three years, represents a significant leap in AI capabilities and has sparked fresh discussion about the pace of technological progress.",
+      category: "தொழில்நுட்பம்",
+      date: new Date(Date.now() - 172800000).toLocaleDateString('ta-IN', { year:'numeric', month:'long', day:'numeric' }),
+      time: "02:15 PM",
+      timestamp: new Date(Date.now() - 172800000).toISOString(),
+      media: null, mediaType: null
+    },
+    {
+      id: 1700000003,
+      title: "தேசிய கிரிக்கெட் அணி 3-1 வித்தியாசத்தில் தொடரை வெல்கிறது",
+      content: "In a thrilling finale at home, the national cricket team clinched the series against the touring side with a dominant 8-wicket victory. The star performer was young fast bowler Arjun Mehta, who took 5 wickets for just 32 runs.\n\nThe captain praised the team's resilience after a difficult first match and expressed confidence ahead of the upcoming World Cup qualifiers.",
+      category: "விளையாட்டு",
+      date: new Date(Date.now() - 43200000).toLocaleDateString('ta-IN', { year:'numeric', month:'long', day:'numeric' }),
+      time: "07:00 PM",
+      timestamp: new Date(Date.now() - 43200000).toISOString(),
+      media: null, mediaType: null
+    }
+  ];
+  _newsCache = samples;
+  localStorage.setItem('dp_news', JSON.stringify(samples));
+  localStorage.setItem('dp_seeded', '1');
+}
+
+// ===== INIT =====
+async function init() {
+  setLoading(true, 'Firebase உடன் இணைக்கிறது...');
+
+  const fbReady = initFirebase();
+
+  if (!fbReady) {
+    // Firebase failed — use localStorage fallback
+    try { _newsCache = JSON.parse(localStorage.getItem('dp_news') || '[]'); } catch { _newsCache = []; }
+    if (_newsCache.length === 0) seedSampleData();
+    setLoading(false);
+  }
+  // If Firebase ready, onSnapshot fires automatically → calls setLoading(false) + renderNews()
+
+  showNews();
+  checkUrlHash();
+}
+
+init();
+</script>
+</body>
+</html>
