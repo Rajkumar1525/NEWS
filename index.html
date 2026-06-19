@@ -965,7 +965,7 @@
     <div class="header-top">
       <div class="logo">
         <span class="logo-dot"></span>
-        <span class="logo-text">மலைக்கோட்டை  முரசு</span>
+        <span class="logo-text">Malaikottai Murasu</span>
       </div>
       <div class="header-meta">
         <span id="live-date"></span>
@@ -1186,45 +1186,36 @@ function initFirebase() {
     }
     db = firebase.firestore();
 
-    // Clear stale localStorage so old cache never hides Firebase data
-    localStorage.removeItem('dp_news');
-    localStorage.removeItem('dp_seeded');
-    // Keep _newsCache = null until Firebase responds
+    // Always start fresh — Firebase is sole source of truth
     _newsCache = null;
 
-    // REAL-TIME LISTENER — fires immediately on load AND on every change
+    // REAL-TIME LISTENER — fires on load + every change on ALL devices
     db.collection(COLLECTION)
-      .orderBy('timestamp', 'desc')
+      .orderBy('createdAt', 'desc')
       .onSnapshot(function(snapshot) {
         var articles = [];
         snapshot.forEach(function(doc) {
-          var data = doc.data();
-          articles.push(Object.assign({}, data, { firestoreId: doc.id }));
+          var d = doc.data();
+          d.firestoreId = doc.id;
+          articles.push(d);
         });
         _newsCache = articles;
-
-        // Render news page (always — this is the ONLY source of truth)
         renderNews();
-
-        // Refresh admin panel if it is open
-        var adminList = document.getElementById('admin-news-list');
-        if (adminList && document.getElementById('page-admin').style.display !== 'none') {
+        // Refresh admin if open
+        if (document.getElementById('page-admin').style.display !== 'none') {
           renderAdminList();
           renderAdminStats();
         }
-
-        // Hide loading overlay
         setLoading(false);
-
       }, function(err) {
-        console.error('Firestore listener error:', err);
-        // Show error to user
-        var grid = document.getElementById('news-grid');
-        if (grid) grid.innerHTML = '<div class="empty-state"><div class="icon">❌</div><h3>Firebase இணைப்பு தோல்வி</h3><p>Firestore Rules சரிபார்க்கவும் அல்லது internet இணைப்பை சரிபார்க்கவும்.</p></div>';
+        console.error('Firestore error:', err);
+        _newsCache = [];
+        renderNews();
         setLoading(false);
+        var grid = document.getElementById('news-grid');
+        if (grid) grid.innerHTML = '<div class="empty-state"><div class="icon">❌</div><h3>இணைப்பு தோல்வி</h3><p>Firebase Rules சரியாக உள்ளதா என்று சரிபார்க்கவும்.</p></div>';
       });
 
-    console.log('Firebase connected — real-time sync active!');
     return true;
   } catch(e) {
     console.error('Firebase init error:', e);
@@ -1232,58 +1223,87 @@ function initFirebase() {
   }
 }
 
-// getNewsCloud kept for compatibility but onSnapshot handles everything
-async function getNewsCloud() {
-  return _newsCache || [];
+// Compress image before saving to Firebase (keeps under 900KB)
+function compressImage(base64, maxKB, callback) {
+  if (!base64 || base64.indexOf('data:image') !== 0) { callback(base64); return; }
+  var img = new Image();
+  img.onload = function() {
+    var canvas = document.createElement('canvas');
+    var MAX = 800;
+    var w = img.width, h = img.height;
+    if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+    if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    var quality = 0.7;
+    var result = canvas.toDataURL('image/jpeg', quality);
+    // If still too big, compress more
+    while (result.length > maxKB * 1024 && quality > 0.2) {
+      quality -= 0.1;
+      result = canvas.toDataURL('image/jpeg', quality);
+    }
+    callback(result);
+  };
+  img.src = base64;
 }
 
-// Save ONE new article to Firebase
+// Save article to Firebase
 async function saveArticleCloud(article) {
   if (!isFirebaseReady()) {
-    // fallback: save to localStorage
-    const arr = getNews();
-    arr.unshift(article);
-    _newsCache = arr;
-    localStorage.setItem('dp_news', JSON.stringify(arr));
+    if (!_newsCache) _newsCache = [];
+    _newsCache.unshift(article);
+    renderNews();
     return article;
   }
   try {
-    const docRef = await db.collection(COLLECTION).add(article);
+    // Add Firestore timestamp for reliable ordering
+    var toSave = Object.assign({}, article);
+    toSave.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+
+    // Handle media — compress image or strip if too large
+    if (toSave.media && toSave.mediaType !== 'application/pdf') {
+      // Compress image
+      await new Promise(function(resolve) {
+        compressImage(toSave.media, 700, function(compressed) {
+          toSave.media = compressed;
+          resolve();
+        });
+      });
+    } else if (toSave.media && toSave.mediaType === 'application/pdf') {
+      // PDFs can be large — store flag only
+      if (toSave.media.length > 900000) {
+        toSave.media = null;
+        toSave.mediaType = null;
+        alert('PDF கோப்பு மிகவும் பெரியது. உரை மட்டும் சேமிக்கப்படும்.');
+      }
+    }
+
+    var docRef = await db.collection(COLLECTION).add(toSave);
     article.firestoreId = docRef.id;
-    // Refresh cache
-    if (_newsCache) _newsCache.unshift(article);
-    else _newsCache = [article];
-    localStorage.setItem('dp_news', JSON.stringify(_newsCache));
     return article;
   } catch(e) {
-    console.error('Firebase save error:', e);
-    alert('கட்டுரை சேமிப்பில் பிழை. Firebase அமைப்பை சரிபார்க்கவும்.');
+    console.error('Save error:', e);
+    alert('சேமிப்பு தோல்வி: ' + e.message);
     return null;
   }
 }
 
-// Delete ONE article from Firebase by Firestore document ID
+// Delete article from Firebase
 async function deleteArticleCloud(firestoreId) {
-  if (!isFirebaseReady()) {
-    console.warn('Firebase not ready');
-    return false;
-  }
+  if (!isFirebaseReady() || !firestoreId) return false;
   try {
     await db.collection(COLLECTION).doc(firestoreId).delete();
     return true;
   } catch(e) {
-    console.error('Firebase delete error:', e);
-    alert('கட்டுரை நீக்குவதில் பிழை. Firebase அமைப்பை சரிபார்க்கவும்.');
+    console.error('Delete error:', e);
+    alert('நீக்குவதில் தோல்வி: ' + e.message);
     return false;
   }
 }
 
-// Synchronous getter — Firebase is source of truth
+// Synchronous getter — Firebase onSnapshot is source of truth
 function getNews() {
-  // Always return cache (set by onSnapshot)
-  // Return empty array (not null) only when explicitly needed
-  if (_newsCache !== null) return _newsCache;
-  return [];
+  return _newsCache || [];
 }
 function saveNews(arr) {
   _newsCache = arr;
@@ -1440,6 +1460,7 @@ async function publishNews() {
     timestamp: now.toISOString(),
     media: uploadedFile || null,
     mediaType: uploadedFileType || null
+    // createdAt added by saveArticleCloud as serverTimestamp
   };
 
   setLoading(true, 'கட்டுரை வெளியிடப்படுகிறது...');
@@ -1491,15 +1512,11 @@ async function deleteNews(id) {
   if (article.firestoreId) {
     deleted = await deleteArticleCloud(article.firestoreId);
   } else {
-    // Fallback: not from Firebase, just remove from cache
+    // No firestoreId — just remove from local cache
     deleted = true;
-  }
-
-  if (deleted) {
-    // Remove from local cache
     _newsCache = allNews.filter(a => Number(a.id) !== numId);
-    localStorage.setItem('dp_news', JSON.stringify(_newsCache));
   }
+  // onSnapshot will auto-refresh the list after delete
 
   setLoading(false);
   renderAdminList();
