@@ -1186,28 +1186,41 @@ function initFirebase() {
     }
     db = firebase.firestore();
 
-    // REAL-TIME LISTENER: auto-updates ALL devices instantly
+    // Clear stale localStorage so old cache never hides Firebase data
+    localStorage.removeItem('dp_news');
+    localStorage.removeItem('dp_seeded');
+    // Keep _newsCache = null until Firebase responds
+    _newsCache = null;
+
+    // REAL-TIME LISTENER — fires immediately on load AND on every change
     db.collection(COLLECTION)
       .orderBy('timestamp', 'desc')
       .onSnapshot(function(snapshot) {
-        const articles = [];
+        var articles = [];
         snapshot.forEach(function(doc) {
-          const data = doc.data();
+          var data = doc.data();
           articles.push(Object.assign({}, data, { firestoreId: doc.id }));
         });
         _newsCache = articles;
-        localStorage.setItem('dp_news', JSON.stringify(articles));
-        // Auto refresh news page on ALL devices
+
+        // Render news page (always — this is the ONLY source of truth)
         renderNews();
-        // Refresh admin panel if open
-        const adminList = document.getElementById('admin-news-list');
-        if (adminList && adminList.children.length > 0) {
+
+        // Refresh admin panel if it is open
+        var adminList = document.getElementById('admin-news-list');
+        if (adminList && document.getElementById('page-admin').style.display !== 'none') {
           renderAdminList();
           renderAdminStats();
         }
+
+        // Hide loading overlay
         setLoading(false);
+
       }, function(err) {
-        console.error('Firestore error:', err);
+        console.error('Firestore listener error:', err);
+        // Show error to user
+        var grid = document.getElementById('news-grid');
+        if (grid) grid.innerHTML = '<div class="empty-state"><div class="icon">❌</div><h3>Firebase இணைப்பு தோல்வி</h3><p>Firestore Rules சரிபார்க்கவும் அல்லது internet இணைப்பை சரிபார்க்கவும்.</p></div>';
         setLoading(false);
       });
 
@@ -1265,14 +1278,15 @@ async function deleteArticleCloud(firestoreId) {
   }
 }
 
-// Synchronous getter (uses cache)
+// Synchronous getter — Firebase is source of truth
 function getNews() {
+  // Always return cache (set by onSnapshot)
+  // Return empty array (not null) only when explicitly needed
   if (_newsCache !== null) return _newsCache;
-  try { return JSON.parse(localStorage.getItem('dp_news') || '[]'); } catch { return []; }
+  return [];
 }
 function saveNews(arr) {
   _newsCache = arr;
-  localStorage.setItem('dp_news', JSON.stringify(arr));
 }
 
 // ===== LIVE CLOCK =====
@@ -1295,7 +1309,12 @@ function showPage(id) {
   document.getElementById('page-admin').style.display = id === 'admin' ? 'block' : 'none';
 }
 
-function showNews() { showPage('news'); renderNews(); }
+function showNews() {
+  showPage('news');
+  // Only render if we already have Firebase data
+  // If _newsCache is null, onSnapshot will call renderNews() when data arrives
+  if (_newsCache !== null) renderNews();
+}
 function showLogin() { showPage('login'); }
 
 function showAdmin() {
@@ -1506,6 +1525,13 @@ function renderNews() {
   const grid = document.getElementById('news-grid');
   const badge = document.getElementById('news-count-badge');
 
+  // If Firebase is connected but no data yet — show loading spinner in grid
+  if (_newsCache === null) {
+    if (grid) grid.innerHTML = `<div class="empty-state"><div class="icon" style="font-size:36px;">⏳</div><h3>செய்திகள் ஏற்றப்படுகின்றன...</h3><p>Firebase இலிருந்து தரவு வருகிறது, கொஞ்சம் காத்திருங்கள்.</p></div>`;
+    if (badge) badge.textContent = 'ஏற்றப்படுகிறது...';
+    return;
+  }
+
   let filtered = news;
   if (currentCategory !== 'all') filtered = filtered.filter(a => a.category === currentCategory);
   if (search) filtered = filtered.filter(a =>
@@ -1514,7 +1540,7 @@ function renderNews() {
     a.category.toLowerCase().includes(search)
   );
 
-  if (badge) badge.textContent = filtered.length + ' Article' + (filtered.length !== 1 ? 's' : '');
+  if (badge) badge.textContent = filtered.length + ' செய்தி' + (filtered.length !== 1 ? 'கள்' : '');
 
   if (!grid) return;
 
