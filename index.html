@@ -1191,7 +1191,6 @@ function initFirebase() {
 
     // REAL-TIME LISTENER — fires on load + every change on ALL devices
     db.collection(COLLECTION)
-      .orderBy('createdAt', 'desc')
       .onSnapshot(function(snapshot) {
         var articles = [];
         snapshot.forEach(function(doc) {
@@ -1199,21 +1198,32 @@ function initFirebase() {
           d.firestoreId = doc.id;
           articles.push(d);
         });
+
+        // Sort by id descending (newest first) — works without any Firestore index
+        articles.sort(function(a, b) {
+          var aTime = a.id || 0;
+          var bTime = b.id || 0;
+          return bTime - aTime;
+        });
+
         _newsCache = articles;
         renderNews();
+
         // Refresh admin if open
         if (document.getElementById('page-admin').style.display !== 'none') {
           renderAdminList();
           renderAdminStats();
         }
         setLoading(false);
+
       }, function(err) {
         console.error('Firestore error:', err);
+        // Show exact error so user can debug
+        var grid = document.getElementById('news-grid');
+        if (grid) grid.innerHTML = '<div class="empty-state"><div class="icon">❌</div><h3>Firebase பிழை</h3><p>' + err.message + '</p></div>';
         _newsCache = [];
         renderNews();
         setLoading(false);
-        var grid = document.getElementById('news-grid');
-        if (grid) grid.innerHTML = '<div class="empty-state"><div class="icon">❌</div><h3>இணைப்பு தோல்வி</h3><p>Firebase Rules சரியாக உள்ளதா என்று சரிபார்க்கவும்.</p></div>';
       });
 
     return true;
@@ -1258,7 +1268,7 @@ async function saveArticleCloud(article) {
   try {
     // Add Firestore timestamp for reliable ordering
     var toSave = Object.assign({}, article);
-    toSave.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    // id is Date.now() so we sort by id — no extra timestamp needed
 
     // Handle media — compress image or strip if too large
     if (toSave.media && toSave.mediaType !== 'application/pdf') {
@@ -1460,7 +1470,7 @@ async function publishNews() {
     timestamp: now.toISOString(),
     media: uploadedFile || null,
     mediaType: uploadedFileType || null
-    // createdAt added by saveArticleCloud as serverTimestamp
+
   };
 
   setLoading(true, 'கட்டுரை வெளியிடப்படுகிறது...');
